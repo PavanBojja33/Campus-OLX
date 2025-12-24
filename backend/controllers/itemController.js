@@ -1,15 +1,22 @@
 const Item=require('../models/Item')
 
 exports.addItem = async (req,res) =>{
-    const imageUrls = req.files.map(file => file.path)
+    const imageUrls = req.files ? req.files.map(file => file.path) : [];
     const item=await Item.create({
         ...req.body,
         images:imageUrls,
         seller: req.user
     });
-    req.status(201).json(item);
+    res.status(201).json(item);
 
 }
+
+exports.markAsSold = async (req, res) => {
+  req.item.sold = true;
+  await req.item.save();
+  res.json({ message: "Item marked as sold" });
+};
+
 
 exports.getItems=async (req,res) => {
     const {semester,department,category}=req.query;
