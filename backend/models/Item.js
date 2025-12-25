@@ -12,10 +12,12 @@ const itemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    sold: {
-        type: Boolean,
-        default: false
+    status: {
+        type: String,
+        enum: ["active", "sold", "removed"],
+        default: "active"
     }
+
 },{timestamps : true});
 
 module.exports=mongoose.model('Item',itemSchema);

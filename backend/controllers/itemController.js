@@ -59,9 +59,11 @@ exports.markAsSold = async (req, res) => {
 };
 
 exports.deleteItem = async (req, res) => {
-    await req.item.deleteOne();
-    res.json({ message: "Item deleted successfully" });
+  req.item.status = "removed";
+  await req.item.save();
+  res.json({ message: "Item removed" });
 };
+
 
 exports.updateItem = async (req, res) => {
     const fields = [
@@ -81,4 +83,14 @@ exports.updateItem = async (req, res) => {
 
     await req.item.save();
     res.json(req.item);
+};
+
+exports.getMyItems = async (req, res) => {
+  const items = await Item.find({ seller: req.user });
+
+  const active = items.filter(i => i.status === "active");
+  const sold = items.filter(i => i.status === "sold");
+  const removed = items.filter(i => i.status === "removed");
+
+  res.json({ active, sold, removed });
 };

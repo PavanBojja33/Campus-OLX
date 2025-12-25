@@ -10,7 +10,8 @@ const {
   getItems,
   markAsSold,
   deleteItem,
-  updateItem
+  updateItem,
+  getMyItems
 } = require('../controllers/itemController');
 
 /* ADD ITEM (with images) */
@@ -47,5 +48,8 @@ router.put(
   isSeller,
   updateItem
 );
+
+router.get("/my", protect, getMyItems);
+
 
 module.exports = router;
