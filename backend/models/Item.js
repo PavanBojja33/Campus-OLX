@@ -16,7 +16,8 @@ const itemSchema = new mongoose.Schema({
         type: String,
         enum: ["active", "sold", "removed"],
         default: "active"
-    }
+    },
+    
 
 },{timestamps : true});
 

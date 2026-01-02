@@ -25,10 +25,10 @@ function Navbar() {
                 : "text-gray-600 hover:text-blue-600"
             }
             >
-            Marketplace
+            CAMPUS-OLX
         </NavLink>
 
-        <Link to="/my-listings">My Listings</Link>
+        
 
 
       <div className="flex items-center gap-4">
@@ -46,18 +46,22 @@ function Navbar() {
           </>
         ) : (
           <>
-            <Link
-              to="/marketplace"
-              className="text-gray-600 hover:text-blue-600"
-            >
-              Marketplace
-            </Link>
-            <Link
+            <NavLink to="/profile"
+              className={({ isActive }) =>
+                  isActive
+                  ? "text-blue-600 font-semibold"
+                  : "text-gray-600 hover:text-blue-600"
+              }>Profile</NavLink>
+            <NavLink
               to="/add-item"
-              className="text-gray-600 hover:text-blue-600"
+              className={({ isActive }) =>
+                isActive
+                ? "text-blue-600 font-semibold"
+                : "text-gray-600 hover:text-blue-600"
+            }
             >
               Add Item
-            </Link>
+            </NavLink>
             <button
               onClick={handleLogout}
               className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"

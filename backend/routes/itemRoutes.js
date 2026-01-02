@@ -9,9 +9,9 @@ const {
   addItem,
   getItems,
   markAsSold,
-  deleteItem,
   updateItem,
-  getMyItems
+  getMyItems,
+  removeItem
 } = require('../controllers/itemController');
 
 /* ADD ITEM (with images) */
@@ -22,8 +22,11 @@ router.post(
   addItem
 );
 
-/* GET ITEMS */
+/* GET PUBLIC ITEMS (only active) */
 router.get('/', getItems);
+
+/* GET MY ITEMS (PROFILE) */
+router.get('/my', protect, getMyItems);
 
 /* MARK AS SOLD (seller only) */
 router.put(
@@ -33,12 +36,12 @@ router.put(
   markAsSold
 );
 
-/* DELETE ITEM (seller only) */
-router.delete(
-  '/:id',
+/* REMOVE ITEM (soft delete) */
+router.put(
+  '/remove/:id',
   protect,
   isSeller,
-  deleteItem
+  removeItem
 );
 
 /* UPDATE ITEM (seller only) */
@@ -48,8 +51,5 @@ router.put(
   isSeller,
   updateItem
 );
-
-router.get("/my", protect, getMyItems);
-
 
 module.exports = router;

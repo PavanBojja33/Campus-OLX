@@ -7,7 +7,7 @@ import Register from "./pages/Register";
 import Marketplace from "./pages/Marketplace";
 import AddItem from "./pages/AddItem";
 import ProtectedRoute from "./components/ProtectedRoute";
-import MyListings from "./pages/MyListings";
+import Profile from "./pages/Profile";
 
 
 function App() {
@@ -41,13 +41,14 @@ function App() {
             />
 
             <Route
-              path="/my-listings"
+              path="/profile"
               element={
                 <ProtectedRoute>
-                  <MyListings />
+                  <Profile />
                 </ProtectedRoute>
               }
             />
+
 
           </Routes>
         </main>

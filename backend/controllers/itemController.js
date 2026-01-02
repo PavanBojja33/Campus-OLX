@@ -5,64 +5,61 @@ exports.addItem = async (req,res) =>{
     const item=await Item.create({
         ...req.body,
         images:imageUrls,
-        seller: req.user
+        seller: req.user,
+        status:"active"
     });
     res.status(201).json(item);
 
 }
 
 exports.markAsSold = async (req, res) => {
-  req.item.sold = true;
+  req.item.status = "sold";
   await req.item.save();
   res.json({ message: "Item marked as sold" });
 };
 
+exports.getItems = async (req, res) => {
+  const { semester, department, category } = req.query;
 
-exports.getItems=async (req,res) => {
-    const {semester,department,category}=req.query;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
 
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 5;
-    const skip = (page - 1) * limit;
+  let filter = { status: "active" }; // ✅ ONLY ACTIVE ITEMS
 
-    let filter={sold: false};
+  if (semester) filter.semester = semester;
+  if (department) filter.department = department;
+  if (category) filter.category = category;
 
-    if(semester){
-        filter.semester=semester;
-    }   
-    if(department){
-        filter.department=department;
-    }   
-    if(category){
-        filter.category=category;
-    }   
-    const total = await Item.countDocuments(filter);
+  const total = await Item.countDocuments(filter);
 
-    const items = await Item.find(filter)
-        .populate('seller', 'name department')
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 });
+  const items = await Item.find(filter)
+    .populate("seller", "name department")
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 });
 
-    res.json({
-        page,
-        totalPages: Math.ceil(total / limit),
-        totalItems: total,
-        items
-    });
-}
-
-exports.markAsSold = async (req, res) => {
-    req.item.sold = true;
-    await req.item.save();
-    res.json({ message: "Item marked as sold" });
+  res.json({
+    page,
+    totalPages: Math.ceil(total / limit),
+    totalItems: total,
+    items
+  });
 };
 
-exports.deleteItem = async (req, res) => {
+
+exports.markAsSold = async (req, res) => {
+  req.item.status = "sold";
+  await req.item.save();
+  res.json({ message: "Item marked as sold" });
+};
+
+exports.removeItem = async (req, res) => {
   req.item.status = "removed";
   await req.item.save();
   res.json({ message: "Item removed" });
 };
+
 
 
 exports.updateItem = async (req, res) => {
@@ -86,11 +83,9 @@ exports.updateItem = async (req, res) => {
 };
 
 exports.getMyItems = async (req, res) => {
-  const items = await Item.find({ seller: req.user });
+  const items = await Item.find({ seller: req.user })
+    .sort({ createdAt: -1 });
 
-  const active = items.filter(i => i.status === "active");
-  const sold = items.filter(i => i.status === "sold");
-  const removed = items.filter(i => i.status === "removed");
-
-  res.json({ active, sold, removed });
+  res.json(items);
 };
+
