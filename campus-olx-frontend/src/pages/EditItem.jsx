@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { itemAPI } from "../services/api";
 import toast from "react-hot-toast";
 import Button from "../components/Button";
 import Loader from "../components/Loader";
 
-function AddItem() {
+function EditItem() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     title: "",
@@ -15,81 +16,84 @@ function AddItem() {
     semester: "",
     department: "",
   });
-  const [images, setImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const categories = ["Books", "Electronics", "Furniture", "Clothing", "Sports", "Other"];
+
+  useEffect(() => {
+    fetchItem();
+  }, [id]);
+
+  const fetchItem = async () => {
+    try {
+      const res = await itemAPI.getItems({ limit: 1000 });
+      const item = res.data.items.find((i) => i._id === id);
+      if (item) {
+        setForm({
+          title: item.title || "",
+          description: item.description || "",
+          price: item.price || "",
+          category: item.category || "",
+          semester: item.semester || "",
+          department: item.department || "",
+        });
+      } else {
+        toast.error("Item not found");
+        navigate("/profile");
+      }
+    } catch (error) {
+      toast.error("Failed to load item");
+      navigate("/profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleImageChange(e) {
-    const files = Array.from(e.target.files).slice(0, 5); // Max 5 images
-    setImages(files);
-
-    // Create previews
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews(previews);
-  }
-
-  function removeImage(index) {
-    const newImages = images.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    setImages(newImages);
-    setImagePreviews(newPreviews);
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     if (!form.title || !form.price) {
       toast.error("Title and price are required");
-      setLoading(false);
+      setSubmitting(false);
       return;
     }
 
     if (Number(form.price) <= 0) {
       toast.error("Price must be greater than 0");
-      setLoading(false);
-      return;
-    }
-
-    if (images.length === 0) {
-      toast.error("Please upload at least one image");
-      setLoading(false);
+      setSubmitting(false);
       return;
     }
 
     try {
-      const formData = new FormData();
-      Object.keys(form).forEach((key) => {
-        if (form[key]) {
-          formData.append(key, form[key]);
-        }
-      });
-
-      images.forEach((image) => {
-        formData.append("images", image);
-      });
-
-      await itemAPI.addItem(formData);
-      toast.success("Item added successfully!");
-      navigate("/marketplace");
+      await itemAPI.updateItem(id, form);
+      toast.success("Item updated successfully!");
+      navigate(`/item/${id}`);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add item");
+      toast.error(error.response?.data?.message || "Failed to update item");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader size="lg" />
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-          Add New Item
+          Edit Item
         </h1>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-8 space-y-6 border border-gray-200 dark:border-gray-700">
@@ -194,48 +198,11 @@ function AddItem() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="images" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Images (Up to 5) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="file"
-              id="images"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900 dark:file:text-primary-200"
-            />
-            {imagePreviews.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      aria-label="Remove image"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           <div className="flex gap-4 pt-4">
             <Button
               type="button"
               variant="ghost"
-              onClick={() => navigate("/marketplace")}
+              onClick={() => navigate(`/item/${id}`)}
             >
               Cancel
             </Button>
@@ -243,9 +210,9 @@ function AddItem() {
               type="submit"
               variant="primary"
               fullWidth
-              disabled={loading}
+              disabled={submitting}
             >
-              {loading ? <Loader size="sm" /> : "Add Item"}
+              {submitting ? <Loader size="sm" /> : "Update Item"}
             </Button>
           </div>
         </form>
@@ -254,4 +221,4 @@ function AddItem() {
   );
 }
 
-export default AddItem;
+export default EditItem;

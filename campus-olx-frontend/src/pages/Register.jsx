@@ -1,143 +1,199 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import api from "../services/api";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { authAPI } from "../services/api";
+import toast from "react-hot-toast";
+import Button from "../components/Button";
+import Loader from "../components/Loader";
+import Modal from "../components/Modal";
 
 function Register() {
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     department: "",
   });
-  const { confirmPassword, ...dataToSend } = form;
+  const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const navigate = useNavigate();
 
-
-  if (form.password !== form.confirmPassword) {
-    setError("Passwords do not match");
-    setLoading(false);
-    return;
-  }
-
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  async function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
 
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const { confirmPassword, ...dataToSend } = form;
-      const res = await api.post("/auth/register", dataToSend);
-      setSuccess(res.data.message);
-    } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      const { confirmPassword, ...data } = formData;
+      await authAPI.register(data);
+      toast.success("Registration successful!");
+      setShowSuccessModal(true);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-md p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800">
-          Register
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">
+          Create an Account
         </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="Enter your full name"
+            />
+          </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {error && (
-            <div className="bg-red-100 text-red-600 p-2 rounded text-sm">
-              {error}
-            </div>
-          )}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="Enter your email"
+            />
+          </div>
 
-          {success && (
-            <div className="bg-green-100 text-green-700 p-2 rounded text-sm">
-              {success}
-            </div>
-          )}
+          <div>
+            <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Department (Optional)
+            </label>
+            <input
+              type="text"
+              id="department"
+              name="department"
+              value={formData.department}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="e.g., Computer Science"
+            />
+          </div>
 
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength={6}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="At least 6 characters"
+            />
+          </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="College Email (.edu)"
-            value={form.email}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="Confirm your password"
+            />
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-
-          <input
-            type="text"
-            name="department"
-            placeholder="Department (e.g. CSE)"
-            value={form.department}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
           >
-            {loading ? "Registering..." : "Register"}
-          </button>
+            {loading ? <Loader size="sm" /> : "Create Account"}
+          </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
+        <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Login
+          <Link
+            to="/login"
+            className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+          >
+            Login here
           </Link>
         </p>
       </div>
+
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigate("/login");
+        }}
+        title="Account created"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            Your Campus OLX account has been created. You can now log in and start buying or selling
+            items in your campus community.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate("/");
+              }}
+            >
+              Go to Home
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate("/login");
+              }}
+            >
+              Go to Login
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

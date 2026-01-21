@@ -34,7 +34,7 @@ exports.getItems = async (req, res) => {
   const total = await Item.countDocuments(filter);
 
   const items = await Item.find(filter)
-    .populate("seller", "name department")
+    .populate("seller", "name department avatarUrl bio")
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 });
@@ -84,6 +84,7 @@ exports.updateItem = async (req, res) => {
 
 exports.getMyItems = async (req, res) => {
   const items = await Item.find({ seller: req.user })
+    .populate("seller", "name department avatarUrl bio")
     .sort({ createdAt: -1 });
 
   res.json(items);

@@ -18,6 +18,13 @@ const userSchema = new mongoose.Schema(
     department: {
       type: String,
     },
+    bio: {
+      type: String,
+      maxlength: 500,
+    },
+    avatarUrl: {
+      type: String,
+    },
     // verified: {
     //   type: Boolean,
     //   default: false,
