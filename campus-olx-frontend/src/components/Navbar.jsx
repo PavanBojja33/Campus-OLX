@@ -52,14 +52,14 @@ function Navbar() {
               </Link>
             )}
 
-            {isAuthenticated && (
+            {/* {isAuthenticated && (
               <Link
                 to="/profile"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 Profile
               </Link>
-            )}
+            )} */}
 
             <button
               onClick={toggleTheme}
@@ -93,8 +93,11 @@ function Navbar() {
             ) : (
               <div className="flex items-center gap-3">
                 {user && (
-                  <span className="text-sm text-gray-700 dark:text-gray-300 hidden sm:block max-w-[140px] truncate">
-                    {user.name || user.email}
+                  <span 
+                    onClick={() =>navigate("/profile")}
+                    className="cursor-pointer text-sm text-gray-700 dark:text-gray-300 hidden sm:block max-w-[140px] truncate hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+>
+                      {user.name || user.email}
                   </span>
                 )}
                 <Button variant="ghost" size="sm" onClick={() => setShowLogoutModal(true)}>

@@ -14,7 +14,6 @@ const {
   removeItem
 } = require('../controllers/itemController');
 
-/* ADD ITEM (with images) */
 router.post(
   '/add',
   protect,
@@ -22,13 +21,10 @@ router.post(
   addItem
 );
 
-/* GET PUBLIC ITEMS (only active) */
 router.get('/', getItems);
 
-/* GET MY ITEMS (PROFILE) */
 router.get('/my', protect, getMyItems);
 
-/* MARK AS SOLD (seller only) */
 router.put(
   '/sold/:id',
   protect,
@@ -36,7 +32,6 @@ router.put(
   markAsSold
 );
 
-/* REMOVE ITEM (soft delete) */
 router.put(
   '/remove/:id',
   protect,
@@ -44,7 +39,6 @@ router.put(
   removeItem
 );
 
-/* UPDATE ITEM (seller only) */
 router.put(
   '/:id',
   protect,
