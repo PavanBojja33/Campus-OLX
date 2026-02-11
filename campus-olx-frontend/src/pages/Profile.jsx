@@ -353,6 +353,22 @@ function Profile() {
                 onChange={handleAvatarChange}
                 className="text-sm text-gray-600 dark:text-gray-300"
               />
+
+              {profileDraft.avatarPreview && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setProfileDraft((prev) => ({
+                      ...prev,
+                      avatarPreview: "",
+                      avatarFile: null,
+                    }))
+                  }
+                  className="mt-2 text-sm text-red-600 hover:underline"
+                >
+                  Remove Photo
+                </button>
+              )}
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 We encode and save as a URL string on the server.
               </p>
