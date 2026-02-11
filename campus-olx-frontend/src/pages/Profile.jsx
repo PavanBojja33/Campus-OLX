@@ -25,7 +25,7 @@ function Profile() {
   const { user, refetchUser } = useAuth();
 
   useEffect(() => {
-    document.title = "My Profile | Campus OLX";
+    // document.title = "My Profile | Campus OLX";
     fetchMyItems();
   }, []);
 
