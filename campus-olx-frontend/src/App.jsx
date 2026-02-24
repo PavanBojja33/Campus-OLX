@@ -11,6 +11,7 @@ import EditItem from "./pages/EditItem";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Chat from "./pages/Chat"
 
 function App() {
   return (
@@ -69,6 +70,7 @@ function App() {
               }
             />
 
+            <Route path="/chat" element={<Chat/>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

@@ -8,6 +8,7 @@ function Landing() {
   return (
     <div className="min-h-screen flex flex-col">
       <section className="flex-grow flex items-center justify-center px-4 py-20">
+        
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
             Welcome to <span className="text-primary-600 dark:text-primary-400">Campus OLX</span>
