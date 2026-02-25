@@ -3,7 +3,9 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { Server } = require("socket.io");
-const http = require("http")
+const http = require("http");
+const Message = require("./models/message");
+const jwt = require("jsonwebtoken");
 
 // node --dns-result-order=ipv4first server.js
 
@@ -51,29 +53,48 @@ app.get("/", (req, res) => {
   res.send("Campus OLX is running");
 });
 
-const io = new Server(server , {
-  cors : {
-    origin : allowedOrigins,
-    methods : ['GET','POST'],
-    credentials : true
-  }
-})
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 io.on("connection", (socket) => {
   console.log("User connected", socket.id);
 
   socket.emit("welcome", "Welcome to campus-olx chat app");
+  socket.on("joinRoom", (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
+  });
 
-  socket.on("sendMessage",(message) => {
-    console.log("Message : ",message)
+  socket.on("sendMessage", async ({ roomId, message, token }) => {
+    console.log("Socket sendMessage triggered");
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded.id;
 
-    io.emit("receiveMsg",message);
-  })
-  
+      const newMsg = await Message.create({
+        roomId,
+        sender: userId,
+        message,
+      });
+
+      io.to(roomId).emit("receiveMsg", {
+        message,
+        sender: userId,
+        createdAt: newMsg.createdAt,
+      });
+    } catch (error) {
+      console.log("Error : ", error);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
   });
-
 });
 
 server.listen(process.env.PORT || 5000, () => {
