@@ -60,6 +60,7 @@ function Navbar() {
                 Profile
               </Link>
             )} */}
+            <Link to="/chats">Chats</Link>
 
             <button
               onClick={toggleTheme}
@@ -76,6 +77,7 @@ function Navbar() {
                 </svg>
               )}
             </button>
+
 
             {!isAuthenticated ? (
               <div className="flex items-center gap-2">

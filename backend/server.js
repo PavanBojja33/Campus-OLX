@@ -6,6 +6,7 @@ const { Server } = require("socket.io");
 const http = require("http");
 const Message = require("./models/message");
 const jwt = require("jsonwebtoken");
+const Item = require("./models/Item");
 
 // node --dns-result-order=ipv4first server.js
 
@@ -48,6 +49,8 @@ mongoose
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/items", require("./routes/itemRoutes"));
+app.use("/api/messages", require("./routes/messageRoutes"));
+app.use("/api/chats", require("./routes/chatRoutes"));
 
 app.get("/", (req, res) => {
   res.send("Campus OLX is running");
@@ -61,35 +64,57 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("User connected", socket.id);
+  io.on("connection", (socket) => {
+    console.log("User connected", socket.id);
 
-  socket.emit("welcome", "Welcome to campus-olx chat app");
-  socket.on("joinRoom", (roomId) => {
-    socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
-  });
+    socket.emit("welcome", "Welcome to campus-olx chat app");
+    socket.on("joinRoom", (roomId) => {
+      socket.join(roomId);
+      console.log(`User ${socket.id} joined room ${roomId}`);
+      console.log("Current rooms:", socket.rooms);
+    });
 
   socket.on("sendMessage", async ({ roomId, message, token }) => {
-    console.log("Socket sendMessage triggered");
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const userId = decoded.id;
+      const senderId = decoded.id;
 
-      const newMsg = await Message.create({
+      const item = await Item.findById(roomId);
+      if (!item) return;
+
+      let receiverId;
+
+      if (item.seller.toString() === senderId) {
+        receiverId = null; 
+      } else {
+        receiverId = item.seller;
+      }
+
+      const newMessage = await Message.create({
         roomId,
-        sender: userId,
-        message,
+        sender: senderId,
+        receiver: receiverId,
+        message
       });
 
-      io.to(roomId).emit("receiveMsg", {
+      io.to(roomId).emit("receiveMessage", {
         message,
-        sender: userId,
-        createdAt: newMsg.createdAt,
+        sender: senderId,
+        receiver: receiverId,
+        createdAt: newMessage.createdAt
       });
-    } catch (error) {
-      console.log("Error : ", error);
+
+    } catch (err) {
+      console.log("Socket message error");
     }
+  });
+
+  socket.on("typing", ({ roomId }) => {
+    socket.to(roomId).emit("showTyping");
+  });
+
+  socket.on("stopTyping", ({ roomId }) => {
+    socket.to(roomId).emit("hideTyping");
   });
 
   socket.on("disconnect", () => {

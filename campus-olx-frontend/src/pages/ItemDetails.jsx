@@ -18,10 +18,11 @@ function ItemDetails() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSoldModal, setShowSoldModal] = useState(false);
 
+  
   useEffect(() => {
     fetchItem();
   }, [id]);
-
+  
   const fetchItem = async () => {
     try {
       const res = await itemAPI.getItems({ limit: 1000 });
@@ -39,7 +40,7 @@ function ItemDetails() {
       setLoading(false);
     }
   };
-
+  
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -47,7 +48,7 @@ function ItemDetails() {
       maximumFractionDigits: 0,
     }).format(price);
   };
-
+  
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -55,7 +56,7 @@ function ItemDetails() {
       day: "numeric",
     });
   };
-
+  
   const handleMarkAsSold = async () => {
     try {
       await itemAPI.markAsSold(id);
@@ -66,7 +67,7 @@ function ItemDetails() {
       toast.error(error.response?.data?.message || "Failed to update item");
     }
   };
-
+  
   const handleRemoveItem = async () => {
     try {
       await itemAPI.removeItem(id);
@@ -77,7 +78,7 @@ function ItemDetails() {
       toast.error(error.response?.data?.message || "Failed to remove item");
     }
   };
-
+  
   const handleContactSeller = () => {
     if (!item?.seller) {
       toast.error("Seller information not available");
@@ -85,12 +86,12 @@ function ItemDetails() {
     }
     setShowContactModal(true);
   };
-
+  
   // Check if current user is the owner (seller can be ObjectId string or populated object)
   const sellerId = item?.seller?._id || item?.seller;
   const currentUserId = user?.userId || user?._id;
   const isOwner = sellerId && currentUserId && sellerId.toString() === currentUserId.toString();
-
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -231,7 +232,7 @@ function ItemDetails() {
                   </div>
                 </div>
               </div>
-
+              
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                   Listed On
@@ -289,9 +290,23 @@ function ItemDetails() {
                 </>
               ) : (
                 item.status === "active" && (
-                  <Button variant="primary" fullWidth onClick={handleContactSeller}>
-                    Contact Seller
-                  </Button>
+                  <div className="flex flex-col gap-3 w-full">
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => navigate(`/chat/${item._id}`)}
+                    >
+                      Chat with Seller
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      onClick={handleContactSeller}
+                    >
+                      Contact Seller
+                    </Button>
+                  </div>
                 )
               )}
             </div>

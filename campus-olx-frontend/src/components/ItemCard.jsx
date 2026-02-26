@@ -1,6 +1,20 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
+
 
 const ItemCard = ({ item }) => {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  let currentUserId = null;
+
+  if (token) {
+    const decoded = jwtDecode(token);
+    currentUserId = decoded.id;
+  }
+
+const isSeller = currentUserId === item?.seller?._id;
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -8,7 +22,7 @@ const ItemCard = ({ item }) => {
       maximumFractionDigits: 0,
     }).format(price);
   };
-
+  
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -57,6 +71,19 @@ const ItemCard = ({ item }) => {
         {item.seller && (
           <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             <span>Seller: {item.seller.name || "Anonymous"}</span>
+          </div>
+        )}
+        {!isSeller && (
+          <div className="mt-3">
+            <button
+              onClick={(e) => {
+                e.preventDefault(); // prevent Link navigation
+                navigate(`/chat/${item._id}`);
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition"
+            >
+              Chat with Seller
+            </button>
           </div>
         )}
       </div>
