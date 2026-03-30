@@ -9,7 +9,6 @@ function Chat(){
     const roomId = itemId;
     const token = localStorage.getItem("token");
     const messagesEndRef = useRef(null);
-    const [isTyping, setIsTyping] = useState(false);
 
     if (!token) {
         console.log("No token found");
