@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
-    roomId: {
+    chatId: {
       type: String,
       required: true,
     },
@@ -11,12 +11,7 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    receiver: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
-    message: {
+    content: {
       type: String,
       required: true,
     },

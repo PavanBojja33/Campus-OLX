@@ -1,44 +1,35 @@
 const express = require("express");
 const router = express.Router();
-const protect = require("../middleware/authMiddleware");
 const Message = require("../models/message");
+const protect = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
 
 router.get("/", protect, async (req, res) => {
   try {
+    const userId = req.user.id || req.user;
 
-    const userId = req.user.id || req.user;   // ✅ SAFE FIX
+    // 👉 find all messages
+    const messages = await Message.find();
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid user id" });
-    }
+    // 👉 filter chats where user is involved
+    const chatsMap = {};
 
-    const objectUserId = new mongoose.Types.ObjectId(userId);
-
-    const conversations = await Message.aggregate([
-      {
-        $match: {
-          $or: [
-            { sender: objectUserId },
-            { receiver: objectUserId }
-          ]
-        }
-      },
-      { $sort: { createdAt: -1 } },
-      {
-        $group: {
-          _id: "$roomId",
-          lastMessage: { $first: "$message" },
-          updatedAt: { $first: "$createdAt" }
-        }
+    messages.forEach((msg) => {
+      if (msg.sender.toString() === userId || msg.chatId.includes(userId)) {
+        chatsMap[msg.chatId] = msg; // latest message per chat
       }
-    ]);
+    });
 
-    res.json(conversations);
+    const chats = Object.values(chatsMap).map((msg) => ({
+      _id: msg.chatId,
+      lastMessage: msg.content,
+      updatedAt: msg.createdAt,
+    }));
 
-  } catch (error) {
-    console.error("Chat route error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.json(chats);
+  } catch (err) {
+    console.error("Chat error:", err);
+    res.json([]); // never crash
   }
 });
 

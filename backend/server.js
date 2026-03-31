@@ -16,13 +16,13 @@ dns.setDefaultResultOrder("ipv4first");
 dotenv.config();
 
 const app = express();
-
 const server = http.createServer(app);
 
 const allowedOrigins = [
   "http://localhost:5173",
   "https://campus-olx-web.vercel.app",
 ];
+
 
 app.use(
   cors({
@@ -49,8 +49,8 @@ mongoose
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/items", require("./routes/itemRoutes"));
-app.use("/api/messages", require("./routes/messageRoutes"));
 app.use("/api/chats", require("./routes/chatRoutes"));
+app.use("/api/messages", require("./routes/messageRoutes"));
 
 app.get("/", (req, res) => {
   res.send("Campus OLX is running");
@@ -58,69 +58,44 @@ app.get("/", (req, res) => {
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: ["http://localhost:5173"],
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-  io.on("connection", (socket) => {
-    console.log("User connected", socket.id);
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
-    socket.emit("welcome", "Welcome to campus-olx chat app");
-    socket.on("joinRoom", (roomId) => {
-      socket.join(roomId);
-      console.log(`User ${socket.id} joined room ${roomId}`);
-      console.log("Current rooms:", socket.rooms);
-    });
+  socket.on("joinChat", (chatId) => {
+    socket.join(chatId);
+    console.log("Joined chat:", chatId);
+  });
 
-  socket.on("sendMessage", async ({ roomId, message, token }) => {
+  socket.on("sendMessage", async ({ chatId, content, token }) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const senderId = decoded.id;
 
-      const item = await Item.findById(roomId);
-      if (!item) return;
-
-      let receiverId;
-
-      if (item.seller.toString() === senderId) {
-        receiverId = null; 
-      } else {
-        receiverId = item.seller;
-      }
-
       const newMessage = await Message.create({
-        roomId,
+        chatId: chatId,
         sender: senderId,
-        receiver: receiverId,
-        message
+        content,
       });
 
-      io.to(roomId).emit("receiveMessage", {
-        message,
-        sender: senderId,
-        receiver: receiverId,
-        createdAt: newMessage.createdAt
-      });
+      const populatedMsg = await newMessage.populate("sender", "name");
 
+      io.to(chatId).emit("receiveMessage", populatedMsg);
     } catch (err) {
-      console.log("Socket message error");
+      console.log("Socket error:", err);
     }
   });
 
-  socket.on("typing", ({ roomId }) => {
-    socket.to(roomId).emit("showTyping");
-  });
-
-  socket.on("stopTyping", ({ roomId }) => {
-    socket.to(roomId).emit("hideTyping");
-  });
-
   socket.on("disconnect", () => {
-    console.log("User disconnected", socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
+
 
 server.listen(process.env.PORT || 5000, () => {
   console.log(`Server is running on port ${process.env.PORT || 5000}`);

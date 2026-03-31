@@ -1,123 +1,159 @@
-import {useEffect,useState,useRef} from "react"
-import {io} from "socket.io-client"
-import { jwtDecode } from "jwt-decode"
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useParams } from "react-router-dom";
 import { socket } from "../socket";
+import { jwtDecode } from "jwt-decode";
+import { useRef } from "react";
 
-function Chat(){
-    const { itemId } = useParams();
-    const roomId = itemId;
-    const token = localStorage.getItem("token");
-    const messagesEndRef = useRef(null);
+function Chat() {
+  const { chatId } = useParams();
 
-    if (!token) {
-        console.log("No token found");
-        return;
-    }
-    const decoded = jwtDecode(token);
-    const currentUserId = decoded.id;
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
 
-    const [message,setMessage] = useState("");
-    const [messages,setMessages] = useState([]);
-    
-    useEffect(() => {
-        socket.emit("joinRoom",roomId);
-        socket.on("receiveMessage" ,(msg) => {
-            setMessages((prev) => [...prev,msg]);
-            console.log("Received",msg)
-        })
-        return () =>{
-            socket.off("receiveMessage");
-        };
+  const token = localStorage.getItem("token");
+  const messagesEndRef = useRef(null);
 
-        // socket.on("showTyping", () => {
-        //     setIsTyping(true);
-        // });
-
-        // socket.on("hideTyping", () => {
-        //     setIsTyping(false);
-        // });
-
-    },[roomId]);
-
-    const sendMessage = () =>{
-        if(message.trim() === "") return;
-
-        socket.emit("sendMessage",{roomId,message,token});
-        setMessage("");
-    }
-
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
+  const currentUserId = token ? jwtDecode(token).id : null;
 
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+  const fetchMessages = async () => {
+    try {
+      const res = await axios.get(`/messages/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Chats API:", res.data);
+      setMessages(Array.isArray(res.data) ? res.data : res.data.messages || []);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
-            <div className="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col h-[80vh]">
+  if (chatId) fetchMessages();
+}, [chatId]);
 
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                Private Chat
-                </h2>
-            </div>
+  // 🟢 2️⃣ Socket connection
+  useEffect(() => {
+  if (!chatId) return;
 
-            {/* Messages Area */}
-            <div
-                className="flex-1 overflow-y-auto p-4 space-y-3"
-            >
-                {messages.map((msg, index) => {
-                const isMine =
-                    msg.sender?._id === currentUserId ||
-                    msg.sender === currentUserId;
+  socket.emit("joinChat", chatId);
 
-                return (
-                    <div
-                    key={index}
-                    className={`flex ${
-                        isMine ? "justify-end" : "justify-start"
-                    }`}
-                    >
-                    <div
-                        className={`px-4 py-2 rounded-2xl max-w-xs break-words ${
-                        isMine
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
-                        }`}
-                    >
-                        {msg.message}
-                    </div>
-                    </div>
-                );
-                })}
+  socket.on("receiveMessage", (msg) => {
+    setMessages((prev) => {
+      const exists = prev.some((m) => m._id === msg._id);
+      return exists ? prev : [...prev, msg];
+    });
+  });
 
-                <div ref={messagesEndRef} />
-            </div>
+  return () => {
+    socket.off("receiveMessage");
+  };
+}, [chatId]);
 
-            {/* Input Area */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Type a message..."
-                />
+  // 🟢 3️⃣ Send message
+  const sendMessage = () => {
+  if (!input.trim()) return;
 
-                <button
-                onClick={sendMessage}
-                className="px-6 py-2 bg-primary-600 text-white rounded-full hover:bg-primary-700 transition"
-                >
-                Send
-                </button>
-            </div>
-            </div>
+  const newMsg = {
+    _id: Date.now(),
+    content: input,
+    sender: { _id: currentUserId },
+    createdAt: new Date(),
+  };
+
+  // ✅ 1. Show immediately
+  setMessages((prev) => [...prev, newMsg]);
+
+  // ✅ 2. Emit to server
+  socket.emit("sendMessage", {
+    chatId,
+    content: input,
+    token,
+  });
+
+  setInput("");
+};
+
+const formatTime = (date) => {
+  return new Date(date).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+useEffect(() => {
+  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [messages]);
+
+  return (
+    <div className="min-h-screen flex justify-center items-center bg-gray-100 dark:bg-gray-900 p-4">
+      <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col h-[80vh]">
+
+        {/* Header */}
+        <div className="p-4 border-b">
+          <h2 className="text-xl font-semibold">Chat</h2>
         </div>
-        );
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+          {Array.isArray(messages) && messages.map((msg, index) => {
+            const isMine =
+              msg.sender?._id === currentUserId ||
+              msg.sender === currentUserId;
+
+            return (
+              <div
+                key={msg._id || msg.createdAt || index}
+                className={`flex ${
+                  isMine ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`px-4 py-2 rounded-2xl max-w-xs break-words shadow ${
+                    isMine
+                      ? "bg-green-500 text-white rounded-br-sm"
+                      : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white rounded-bl-sm"
+                  }`}
+                >
+                  {!isMine && (
+                    <p className="text-xs font-semibold mb-1">
+                      {msg.sender?.name || "User"}
+                    </p>
+                  )}
+                  <p>{msg.content}</p>
+
+                  <p className="text-[10px] text-right opacity-70 mt-1">
+                    {msg.createdAt ? formatTime(msg.createdAt) : ""}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+          <div ref={messagesEndRef}></div>
+        </div>
+
+        {/* Input */}
+        <div className="p-4 border-t flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 px-4 py-2 border rounded-full focus:outline-none"
+          />
+
+          <button
+            onClick={sendMessage}
+            className="bg-blue-600 text-white px-6 py-2 rounded-full"
+          >
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default Chat;

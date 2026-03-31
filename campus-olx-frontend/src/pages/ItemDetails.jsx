@@ -34,7 +34,8 @@ function ItemDetails() {
         navigate("/marketplace");
       }
     } catch (error) {
-      toast.error("Failed to load item");
+      toast.error("Failed to load item",);
+      console.log(error);
       navigate("/marketplace");
     } finally {
       setLoading(false);
@@ -294,7 +295,14 @@ function ItemDetails() {
                     <Button
                       variant="primary"
                       fullWidth
-                      onClick={() => navigate(`/chat/${item._id}`)}
+                      onClick={() => {
+                        const buyerId = user?._id || user?.userId;
+                        const sellerId = item?.seller?._id || item?.seller;
+
+                        const chatId = `${item._id}_${buyerId}_${sellerId}`;
+
+                        navigate(`/chat/${chatId}`);
+                      }}
                     >
                       Chat with Seller
                     </Button>

@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat"
 import ChatInbox from "./pages/ChatInbox"
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -71,9 +72,10 @@ function App() {
               }
             />
 
-            <Route path="/chat" element={<Chat/>} />
-            <Route path="/chat/:itemId" element={<Chat />} />
             <Route path="/chats" element={<ChatInbox />} />
+
+            <Route path="/chat/:chatId" element={<Chat />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
