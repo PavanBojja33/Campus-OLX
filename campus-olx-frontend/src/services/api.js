@@ -27,8 +27,6 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (data) => api.post("/auth/register", data),
   login: (data) => api.post("/auth/login", data),
-  verifyOtp: (data) => api.post("/auth/verify-otp", data),
-  resendOtp: (data) => api.post("/auth/resend-otp", data),
 };
 
 // Item APIs
@@ -49,18 +47,6 @@ export const userAPI = {
   getProfile: () => api.get("/user/profile"),
   updateProfile: (data) => api.put("/user/profile", data),
   getPublicProfile: (id) => api.get(`/user/${id}`),
-};
-
-// Chat APIs
-export const chatAPI = {
-  getMyChats: () => api.get("/chats"),
-  createChat: (data) => api.post("/chats", data),
-};
-
-// Message APIs
-export const messageAPI = {
-  getMessages: (chatId) => api.get(`/messages/${chatId}`),
-  sendMessage: (data) => api.post("/messages", data),
 };
 
 export default api;
