@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { socket } from "../socket";
 import { jwtDecode } from "jwt-decode";
 import { messageAPI, chatAPI } from "../services/api";
+import { useChatNotifications } from "../context/ChatContext";
 
 function Chat() {
   const { chatId } = useParams();
@@ -16,6 +17,13 @@ function Chat() {
   const messagesEndRef = useRef(null);
 
   const currentUserId = token ? jwtDecode(token).id : null;
+  const { enterChat, leaveChat } = useChatNotifications();
+
+  // Mark this chat as active to suppress notifications
+  useEffect(() => {
+    if (chatId) enterChat(chatId);
+    return () => leaveChat();
+  }, [chatId, enterChat, leaveChat]);
 
   // Fetch chat info
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { chatAPI } from "../services/api";
 import { jwtDecode } from "jwt-decode";
+import { useChatNotifications } from "../context/ChatContext";
 import Loader from "../components/Loader";
 
 function ChatInbox() {
@@ -11,6 +12,12 @@ function ChatInbox() {
 
   const token = localStorage.getItem("token");
   const currentUserId = token ? jwtDecode(token).id : null;
+  const { clearUnread } = useChatNotifications();
+
+  // Clear notification badge when viewing inbox
+  useEffect(() => {
+    clearUnread();
+  }, [clearUnread]);
 
   useEffect(() => {
     const fetchChats = async () => {
