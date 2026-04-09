@@ -19,6 +19,11 @@ function Chat() {
   const currentUserId = token ? jwtDecode(token).id : null;
   const { enterChat, leaveChat } = useChatNotifications();
 
+  // Scroll page to top on mount (fix scroll offset)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Mark this chat as active to suppress notifications
   useEffect(() => {
     if (chatId) enterChat(chatId);
@@ -117,6 +122,7 @@ function Chat() {
     });
   };
 
+  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);

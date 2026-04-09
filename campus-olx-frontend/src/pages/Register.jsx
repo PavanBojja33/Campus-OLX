@@ -19,6 +19,11 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const email = formData.email.trim().toLowerCase();
+    if (!email.endsWith("@cvr.ac.in")) {
+      toast.error("Only CVR College email IDs (@cvr.ac.in) are allowed");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
@@ -34,10 +39,10 @@ function Register() {
 
     try {
       const { confirmPassword, ...data } = formData;
-      const res = await authAPI.register(data);
+      const res = await authAPI.register({ ...data, email });
       toast.success(res.data.message || "Registration successful! Please verify your email.");
       // Redirect to email verification page
-      navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed. Please try again.");
     } finally {

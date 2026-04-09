@@ -12,9 +12,14 @@ function ChatInbox() {
 
   const token = localStorage.getItem("token");
   const currentUserId = token ? jwtDecode(token).id : null;
-  const { clearUnread } = useChatNotifications();
+  const { clearUnread, isChatUnread, markChatRead } = useChatNotifications();
 
-  // Clear notification badge when viewing inbox
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Clear badge count when viewing inbox (but keep per-chat highlights)
   useEffect(() => {
     clearUnread();
   }, [clearUnread]);
@@ -52,6 +57,11 @@ function ChatInbox() {
     return d.toLocaleDateString([], { month: "short", day: "numeric" });
   };
 
+  const handleOpenChat = (chatId) => {
+    markChatRead(chatId);
+    navigate(`/chat/${chatId}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -87,7 +97,7 @@ function ChatInbox() {
               No conversations yet
             </h3>
             <p className="mt-2 text-gray-500 dark:text-gray-400">
-              Start chatting by clicking "Chat with Seller" on any item listing.
+              Start chatting by clicking &quot;Chat with Seller&quot; on any item listing.
             </p>
           </div>
         )}
@@ -104,30 +114,48 @@ function ChatInbox() {
             const itemTitle = chat.item?.title || "";
             const lastMsg = chat.latestMessage?.content || "No messages yet";
             const lastMsgTime = chat.latestMessage?.createdAt || chat.updatedAt;
+            const hasUnread = isChatUnread(chat._id);
 
             return (
               <div
                 key={chat._id}
-                onClick={() => navigate(`/chat/${chat._id}`)}
-                className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 hover:shadow-md transition-all"
+                onClick={() => handleOpenChat(chat._id)}
+                className={`flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all border ${
+                  hasUnread
+                    ? "bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 shadow-md ring-1 ring-primary-200 dark:ring-primary-800"
+                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 hover:shadow-md"
+                }`}
               >
                 {/* Avatar */}
-                {otherUser?.avatarUrl ? (
-                  <img
-                    src={otherUser.avatarUrl}
-                    alt={displayName}
-                    className="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-600"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
-                    {initial}
-                  </div>
-                )}
+                <div className="relative shrink-0">
+                  {otherUser?.avatarUrl ? (
+                    <img
+                      src={otherUser.avatarUrl}
+                      alt={displayName}
+                      className="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold text-lg">
+                      {initial}
+                    </div>
+                  )}
+                  {/* Unread dot on avatar */}
+                  {hasUnread && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-400 opacity-75"></span>
+                      <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-primary-500 border-2 border-white dark:border-gray-800"></span>
+                    </span>
+                  )}
+                </div>
 
                 <div className="flex-1 min-w-0">
                   {/* Name + item */}
                   <div className="flex items-baseline gap-2">
-                    <p className="font-semibold text-gray-900 dark:text-white truncate">
+                    <p className={`truncate ${
+                      hasUnread
+                        ? "font-bold text-gray-900 dark:text-white"
+                        : "font-semibold text-gray-900 dark:text-white"
+                    }`}>
                       {displayName}
                     </p>
                     {otherUser?.department && (
@@ -144,14 +172,29 @@ function ChatInbox() {
                   )}
 
                   {/* Last message */}
-                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                  <p className={`text-sm truncate mt-0.5 ${
+                    hasUnread
+                      ? "text-gray-800 dark:text-gray-200 font-medium"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}>
                     {lastMsg}
                   </p>
                 </div>
 
-                {/* Time */}
-                <div className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
-                  {formatTime(lastMsgTime)}
+                {/* Time + unread indicator */}
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={`text-xs ${
+                    hasUnread
+                      ? "text-primary-600 dark:text-primary-400 font-semibold"
+                      : "text-gray-400 dark:text-gray-500"
+                  }`}>
+                    {formatTime(lastMsgTime)}
+                  </span>
+                  {hasUnread && (
+                    <span className="inline-flex items-center justify-center h-5 min-w-[20px] rounded-full bg-primary-600 text-white text-[10px] font-bold px-1.5">
+                      New
+                    </span>
+                  )}
                 </div>
               </div>
             );
