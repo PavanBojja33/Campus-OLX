@@ -21,7 +21,7 @@ function Register() {
     e.preventDefault();
     const email = formData.email.trim().toLowerCase();
     if (!email.endsWith("@cvr.ac.in")) {
-      toast.error("Only CVR College email IDs (@cvr.ac.in) are allowed");
+      toast.error("Only College email IDs are allowed");
       return;
     }
 

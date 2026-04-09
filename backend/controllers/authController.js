@@ -4,6 +4,16 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
 
+// Allowed email domain
+const ALLOWED_DOMAIN = "@cvr.ac.in";
+
+// Validate that the email belongs to CVR College
+function validateCvrEmail(email) {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  return normalized.endsWith(ALLOWED_DOMAIN);
+}
+
 // Generate a 6-digit OTP
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -11,10 +21,15 @@ function generateOtp() {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, department } = req.body;
+    const { name, password, department } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (!validateCvrEmail(email)) {
+      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
     }
 
     const existingUser = await User.findOne({ email });
@@ -72,10 +87,15 @@ exports.register = async (req, res) => {
 
 exports.verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const { otp } = req.body;
 
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    if (!validateCvrEmail(email)) {
+      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
     }
 
     const otpRecord = await Otp.findOne({ email, otp });
@@ -104,10 +124,14 @@ exports.verifyOtp = async (req, res) => {
 
 exports.resendOtp = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!validateCvrEmail(email)) {
+      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
     }
 
     const user = await User.findOne({ email });
@@ -153,7 +177,12 @@ exports.resendOtp = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const { password } = req.body;
+
+    if (!validateCvrEmail(email)) {
+      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
