@@ -16,14 +16,27 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const email = formData.email.trim().toLowerCase();
+
+    if (!email.endsWith("@cvr.ac.in")) {
+      toast.error("Only College email IDs are allowed");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await authAPI.login(formData);
+      const res = await authAPI.login({ ...formData, email });
       login(res.data.token);
       toast.success("Login successful!");
       setShowSuccessModal(true);
     } catch (error) {
+      // Handle unverified email — redirect to verification page
+      if (error.response?.status === 403 && error.response?.data?.needsVerification) {
+        toast.error("Please verify your email first");
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       toast.error(error.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
