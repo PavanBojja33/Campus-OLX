@@ -5,6 +5,7 @@ import { authAPI } from "../services/api";
 import toast from "react-hot-toast";
 import Button from "../components/Button";
 import Loader from "../components/Loader";
+import Modal from "../components/Modal";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -15,15 +16,11 @@ function Register() {
     department: "",
   });
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = formData.email.trim().toLowerCase();
-    if (!email.endsWith("@cvr.ac.in")) {
-      toast.error("Only College email IDs are allowed");
-      return;
-    }
 
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
@@ -39,10 +36,9 @@ function Register() {
 
     try {
       const { confirmPassword, ...data } = formData;
-      const res = await authAPI.register({ ...data, email });
-      toast.success(res.data.message || "Registration successful! Please verify your email.");
-      // Redirect to email verification page
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      await authAPI.register(data);
+      toast.success("Registration successful!");
+      setShowSuccessModal(true);
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed. Please try again.");
     } finally {
@@ -162,6 +158,42 @@ function Register() {
           </Link>
         </p>
       </div>
+
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigate("/login");
+        }}
+        title="Account created"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            Your Campus OLX account has been created. You can now log in and start buying or selling
+            items in your campus community.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate("/");
+              }}
+            >
+              Go to Home
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate("/login");
+              }}
+            >
+              Go to Login
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
