@@ -17,7 +17,7 @@ exports.getProfile = async (req, res) => {
 // PUT /api/user/profile (requires auth)
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, department, bio, avatarUrl } = req.body;
+    const { name, department, bio, avatarUrl, phone, year, section } = req.body;
 
     const user = await User.findById(req.user);
     if (!user) {
@@ -28,6 +28,9 @@ exports.updateProfile = async (req, res) => {
     if (department !== undefined) user.department = department;
     if (bio !== undefined) user.bio = bio;
     if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
+    if (phone !== undefined) user.phone = phone;
+    if (year !== undefined) user.year = year;
+    if (section !== undefined) user.section = section;
 
     await user.save();
 
@@ -44,7 +47,9 @@ exports.updateProfile = async (req, res) => {
 // GET /api/user/:id (public)
 exports.getPublicProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("name department bio avatarUrl createdAt");
+    const user = await User.findById(req.params.id).select(
+      "name email department bio avatarUrl phone year section createdAt"
+    );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

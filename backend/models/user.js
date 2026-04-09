@@ -25,6 +25,19 @@ const userSchema = new mongoose.Schema(
     avatarUrl: {
       type: String,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    phone: {
+      type: String,
+    },
+    year: {
+      type: String,
+    },
+    section: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

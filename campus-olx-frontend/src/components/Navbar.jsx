@@ -52,15 +52,14 @@ function Navbar() {
               </Link>
             )}
 
-            {/* {isAuthenticated && (
+            {isAuthenticated && (
               <Link
-                to="/profile"
+                to="/chats"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
-                Profile
+                Chats
               </Link>
-            )} */}
-            <Link to="/chats">Chats</Link>
+            )}
 
             <button
               onClick={toggleTheme}

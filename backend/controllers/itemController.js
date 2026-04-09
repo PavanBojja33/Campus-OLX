@@ -12,12 +12,6 @@ exports.addItem = async (req,res) =>{
 
 }
 
-exports.markAsSold = async (req, res) => {
-  req.item.status = "sold";
-  await req.item.save();
-  res.json({ message: "Item marked as sold" });
-};
-
 exports.getItems = async (req, res) => {
   const { semester, department, category } = req.query;
 
@@ -25,7 +19,7 @@ exports.getItems = async (req, res) => {
   const limit = Number(req.query.limit) || 5;
   const skip = (page - 1) * limit;
 
-  let filter = { status: "active" }; // ✅ ONLY ACTIVE ITEMS
+  let filter = { status: "active" };
 
   if (semester) filter.semester = semester;
   if (department) filter.department = department;
@@ -34,7 +28,7 @@ exports.getItems = async (req, res) => {
   const total = await Item.countDocuments(filter);
 
   const items = await Item.find(filter)
-    .populate("seller", "name department avatarUrl bio")
+    .populate("seller", "name department avatarUrl bio email phone year section")
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 });
@@ -47,7 +41,6 @@ exports.getItems = async (req, res) => {
   });
 };
 
-
 exports.markAsSold = async (req, res) => {
   req.item.status = "sold";
   await req.item.save();
@@ -59,8 +52,6 @@ exports.removeItem = async (req, res) => {
   await req.item.save();
   res.json({ message: "Item removed" });
 };
-
-
 
 exports.updateItem = async (req, res) => {
     const fields = [
@@ -84,9 +75,8 @@ exports.updateItem = async (req, res) => {
 
 exports.getMyItems = async (req, res) => {
   const items = await Item.find({ seller: req.user })
-    .populate("seller", "name department avatarUrl bio")
+    .populate("seller", "name department avatarUrl bio email phone year section")
     .sort({ createdAt: -1 });
 
   res.json(items);
 };
-
