@@ -143,7 +143,7 @@ function Profile() {
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* PROFILE HEADER */}
+        
         <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-md mb-8 border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
             <div className="relative">
@@ -173,7 +173,7 @@ function Profile() {
                       {user.email}
                     </p>
                   )}
-                  {/* New profile fields */}
+                  
                   <div className="flex flex-wrap gap-3 mt-2">
                     {user?.phone && (
                       <span className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
@@ -214,14 +214,14 @@ function Profile() {
           </div>
         </div>
 
-        {/* STATS */}
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard label="Active Items" value={activeItems.length} color="primary" />
           <StatCard label="Sold Items" value={soldItems.length} color="green" />
           <StatCard label="Removed Items" value={removedItems.length} color="red" />
         </div>
 
-        {/* TABS */}
+        
         <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
           <div className="flex gap-6">
             <Tab
@@ -242,7 +242,7 @@ function Profile() {
           </div>
         </div>
 
-        {/* ITEMS GRID */}
+        
         {data.length === 0 ? (
           <div className="text-center py-20">
             <svg
@@ -311,7 +311,7 @@ function Profile() {
         )}
       </div>
 
-      {/* Mark as Sold Modal */}
+      
       <Modal
         isOpen={showSoldModal.open}
         onClose={() => setShowSoldModal({ open: false, itemId: null })}
@@ -335,8 +335,7 @@ function Profile() {
         </div>
       </Modal>
 
-      {/* Remove Item Modal */}
-      <Modal
+     <Modal
         isOpen={showRemoveModal.open}
         onClose={() => setShowRemoveModal({ open: false, itemId: null })}
         title="Remove Item"
@@ -359,7 +358,7 @@ function Profile() {
         </div>
       </Modal>
 
-      {/* Edit profile modal */}
+      
       <Modal
         isOpen={showEditProfile}
         onClose={() => setShowEditProfile(false)}
@@ -480,6 +479,11 @@ function Profile() {
                 <option value="C">C</option>
                 <option value="D">D</option>
                 <option value="E">E</option>
+                <option value="A">F</option>
+                <option value="B">G</option>
+                <option value="C">H</option>
+                <option value="D">I</option>
+                <option value="E">J</option>
               </select>
             </div>
           </div>
