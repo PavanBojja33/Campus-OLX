@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { useChatNotifications } from "../context/ChatContext";
 import toast from "react-hot-toast";
 import Button from "./Button";
 import Modal from "./Modal";
@@ -10,7 +9,6 @@ import { useState } from "react";
 function Navbar() {
   const { isAuthenticated, logout, user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-  const { unreadCount } = useChatNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -54,27 +52,15 @@ function Navbar() {
               </Link>
             )}
 
-            {isAuthenticated && (
+            {/* {isAuthenticated && (
               <Link
-                to="/chats"
-                className="relative text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                to="/profile"
+                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
-                <span className="flex items-center gap-1">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  <span className="hidden sm:inline">Chats</span>
-                </span>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-2 -right-3 flex h-5 min-w-[20px] items-center justify-center">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
-                  </span>
-                )}
+                Profile
               </Link>
-            )}
+            )} */}
+            <Link to="/chats">Chats</Link>
 
             <button
               onClick={toggleTheme}

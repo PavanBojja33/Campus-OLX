@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { itemAPI, chatAPI } from "../services/api";
+import { itemAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import Button from "../components/Button";
@@ -13,7 +13,6 @@ function ItemDetails() {
   const { user } = useAuth();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [chatLoading, setChatLoading] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -78,27 +77,6 @@ function ItemDetails() {
       navigate("/profile");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to remove item");
-    }
-  };
-
-  const handleChatWithSeller = async () => {
-    const sellerId = item?.seller?._id || item?.seller;
-    if (!sellerId) {
-      toast.error("Seller information not available");
-      return;
-    }
-
-    setChatLoading(true);
-    try {
-      const res = await chatAPI.createChat({
-        itemId: item._id,
-        sellerId: sellerId,
-      });
-      navigate(`/chat/${res.data._id}`);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to start chat");
-    } finally {
-      setChatLoading(false);
     }
   };
   
@@ -317,10 +295,16 @@ function ItemDetails() {
                     <Button
                       variant="primary"
                       fullWidth
-                      onClick={handleChatWithSeller}
-                      disabled={chatLoading}
+                      onClick={() => {
+                        const buyerId = user?._id || user?.userId;
+                        const sellerId = item?.seller?._id || item?.seller;
+
+                        const chatId = `${item._id}_${buyerId}_${sellerId}`;
+
+                        navigate(`/chat/${chatId}`);
+                      }}
                     >
-                      {chatLoading ? <Loader size="sm" /> : "Chat with Seller"}
+                      Chat with Seller
                     </Button>
 
                     <Button
@@ -338,109 +322,31 @@ function ItemDetails() {
         </div>
       </div>
 
-      {/* Contact Seller Modal — Enhanced */}
+      {/* Contact Seller Modal */}
       <Modal
         isOpen={showContactModal}
         onClose={() => setShowContactModal(false)}
         title="Contact Seller"
       >
-        <div className="space-y-5">
-          {/* Seller card */}
-          <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            {item.seller?.avatarUrl ? (
-              <img
-                src={item.seller.avatarUrl}
-                alt="Seller"
-                className="h-14 w-14 rounded-full object-cover border-2 border-primary-500"
-              />
-            ) : (
-              <div className="h-14 w-14 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold text-xl">
-                {item.seller?.name?.charAt(0)?.toUpperCase() || "U"}
-              </div>
-            )}
+        <div className="space-y-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            You can contact <strong>{item.seller?.name || "the seller"}</strong> at:
+          </p>
+          {item.seller?.email ? (
             <div>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {item.seller?.name || "Anonymous"}
-              </p>
-              {item.seller?.department && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {item.seller.department}
-                </p>
-              )}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Email:</p>
+              <a
+                href={`mailto:${item.seller.email}`}
+                className="text-primary-600 dark:text-primary-400 hover:underline break-all"
+              >
+                {item.seller.email}
+              </a>
             </div>
-          </div>
-
-          {/* Contact details */}
-          <div className="space-y-3">
-            {/* Email */}
-            {item.seller?.email && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-                <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
-                  <a
-                    href={`mailto:${item.seller.email}`}
-                    className="text-primary-600 dark:text-primary-400 hover:underline break-all"
-                  >
-                    {item.seller.email}
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* Phone */}
-            {item.seller?.phone && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-                <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
-                  <a
-                    href={`tel:${item.seller.phone}`}
-                    className="text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    {item.seller.phone}
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* Year */}
-            {item.seller?.year && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-                <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Year</p>
-                  <p className="text-gray-900 dark:text-white">{item.seller.year}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Section */}
-            {item.seller?.section && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-                <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Section</p>
-                  <p className="text-gray-900 dark:text-white">{item.seller.section}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Fallback if no contact info at all */}
-            {!item.seller?.email && !item.seller?.phone && (
-              <p className="text-gray-600 dark:text-gray-400 text-center py-4">
-                No contact information available. Try using the chat feature to reach the seller.
-              </p>
-            )}
-          </div>
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400">
+              Email information is not available. Please check your campus directory.
+            </p>
+          )}
         </div>
       </Modal>
 
