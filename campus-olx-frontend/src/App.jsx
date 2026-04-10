@@ -4,6 +4,7 @@ import Footer from "./components/Footer";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 import Marketplace from "./pages/Marketplace";
 import ItemDetails from "./pages/ItemDetails";
 import AddItem from "./pages/AddItem";
@@ -26,6 +27,7 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
 
             <Route
               path="/marketplace"
@@ -72,9 +74,23 @@ function App() {
               }
             />
 
-            <Route path="/chats" element={<ChatInbox />} />
+            <Route
+              path="/chats"
+              element={
+                <ProtectedRoute>
+                  <ChatInbox />
+                </ProtectedRoute>
+              }
+            />
 
-            <Route path="/chat/:chatId" element={<Chat />} />
+            <Route
+              path="/chat/:chatId"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -13,6 +13,10 @@ const chatSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    latestMessage: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+    },
   },
   { timestamps: true },
 );
