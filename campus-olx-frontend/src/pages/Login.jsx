@@ -31,7 +31,6 @@ function Login() {
       toast.success("Login successful!");
       setShowSuccessModal(true);
     } catch (error) {
-      // Handle unverified email — redirect to verification page
       if (error.response?.status === 403 && error.response?.data?.needsVerification) {
         toast.error("Please verify your email first");
         navigate(`/verify-email?email=${encodeURIComponent(email)}`);

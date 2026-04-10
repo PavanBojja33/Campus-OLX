@@ -26,10 +26,9 @@ function AddItem() {
   }
 
   function handleImageChange(e) {
-    const files = Array.from(e.target.files).slice(0, 5); // Max 5 images
+    const files = Array.from(e.target.files).slice(0, 5); 
     setImages(files);
 
-    // Create previews
     const previews = files.map((file) => URL.createObjectURL(file));
     setImagePreviews(previews);
   }

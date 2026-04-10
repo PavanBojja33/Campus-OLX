@@ -1,6 +1,5 @@
 const User = require("../models/user");
 
-// GET /api/user/profile (requires auth)
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user).select("-password");
@@ -14,7 +13,6 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// PUT /api/user/profile (requires auth)
 exports.updateProfile = async (req, res) => {
   try {
     const { name, department, bio, avatarUrl, phone, year, section } = req.body;
@@ -44,7 +42,6 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// GET /api/user/:id (public)
 exports.getPublicProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select(

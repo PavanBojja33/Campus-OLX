@@ -47,7 +47,6 @@ function Marketplace() {
         ...filters,
       };
       
-      // Remove empty filters
       Object.keys(params).forEach((key) => {
         if (params[key] === "") delete params[key];
       });
@@ -55,7 +54,6 @@ function Marketplace() {
       const res = await itemAPI.getItems(params);
       let fetchedItems = res.data.items;
 
-      // Client-side search filtering
       if (searchTerm) {
         fetchedItems = fetchedItems.filter(
           (item) =>
@@ -64,7 +62,6 @@ function Marketplace() {
         );
       }
 
-      // Price range filter (client-side)
       if (filters.minPrice) {
         fetchedItems = fetchedItems.filter((item) => item.price >= Number(filters.minPrice));
       }
@@ -72,7 +69,6 @@ function Marketplace() {
         fetchedItems = fetchedItems.filter((item) => item.price <= Number(filters.maxPrice));
       }
 
-      // Client-side sorting
       if (filters.sortBy === "price-low") {
         fetchedItems.sort((a, b) => a.price - b.price);
       } else if (filters.sortBy === "price-high") {

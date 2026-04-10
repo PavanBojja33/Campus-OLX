@@ -4,7 +4,6 @@ const protect = require("../middleware/authMiddleware");
 const Message = require("../models/message");
 const Chat = require("../models/Chat");
 
-// Send message via REST (fallback, socket is primary)
 router.post("/", protect, async (req, res) => {
   try {
     const { chatId, content } = req.body;
@@ -20,7 +19,6 @@ router.post("/", protect, async (req, res) => {
       content,
     });
 
-    // Update chat's latest message
     await Chat.findByIdAndUpdate(chatId, {
       latestMessage: message._id,
     });
@@ -34,7 +32,6 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// Get messages of a chat
 router.get("/:chatId", protect, async (req, res) => {
   try {
     const messages = await Message.find({

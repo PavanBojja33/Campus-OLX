@@ -4,17 +4,14 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
 
-// Allowed email domain
 const ALLOWED_DOMAIN = "@cvr.ac.in";
 
-// Validate that the email belongs to CVR College
 function validateCvrEmail(email) {
   if (!email) return false;
   const normalized = email.trim().toLowerCase();
   return normalized.endsWith(ALLOWED_DOMAIN);
 }
 
-// Generate a 6-digit OTP
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -47,16 +44,14 @@ exports.register = async (req, res) => {
       isVerified: false,
     });
 
-    // Generate OTP and save
     const otp = generateOtp();
-    await Otp.deleteMany({ email }); // clear any old OTPs
+    await Otp.deleteMany({ email }); 
     await Otp.create({
       email,
       otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), 
     });
 
-    // Send OTP email
     await sendEmail(
       email,
       "Verify your Campus OLX account",
@@ -109,10 +104,8 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "OTP has expired. Please request a new one." });
     }
 
-    // Mark user as verified
     await User.findOneAndUpdate({ email }, { isVerified: true });
 
-    // Clean up OTPs
     await Otp.deleteMany({ email });
 
     res.json({ message: "Email verified successfully. You can now log in." });
@@ -143,7 +136,6 @@ exports.resendOtp = async (req, res) => {
       return res.status(400).json({ message: "Email is already verified" });
     }
 
-    // Generate new OTP
     const otp = generateOtp();
     await Otp.deleteMany({ email });
     await Otp.create({
@@ -194,8 +186,6 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    // Allow existing users (created before verification was added) to log in
-    // Only block users who explicitly have isVerified === false
     if (user.isVerified === false) {
       return res.status(403).json({
         message: "Please verify your email before logging in",

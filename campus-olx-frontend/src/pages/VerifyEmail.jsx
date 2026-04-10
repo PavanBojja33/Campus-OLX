@@ -30,13 +30,12 @@ function VerifyEmail() {
   }, [cooldown]);
 
   const handleChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return; // only digits
+    if (!/^\d*$/.test(value)) return;
 
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // take last digit
+    newOtp[index] = value.slice(-1); 
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -85,7 +84,7 @@ function VerifyEmail() {
     try {
       const res = await authAPI.resendOtp({ email });
       toast.success(res.data.message || "New OTP sent!");
-      setCooldown(60); // 60 second cooldown
+      setCooldown(60); 
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } catch (error) {

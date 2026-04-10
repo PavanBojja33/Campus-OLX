@@ -41,7 +41,6 @@ function Register() {
       const { confirmPassword, ...data } = formData;
       const res = await authAPI.register({ ...data, email });
       toast.success(res.data.message || "Registration successful! Please verify your email.");
-      // Redirect to email verification page
       navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed. Please try again.");

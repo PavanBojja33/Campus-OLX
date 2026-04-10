@@ -68,7 +68,6 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // Register user to their personal room for notifications
   socket.on("registerUser", (userId) => {
     if (userId) {
       socket.join(`user_${userId}`);
@@ -92,7 +91,6 @@ io.on("connection", (socket) => {
         content,
       });
 
-      // Update the chat's latest message
       const chat = await Chat.findByIdAndUpdate(
         chatId,
         { latestMessage: newMessage._id },
@@ -101,10 +99,8 @@ io.on("connection", (socket) => {
 
       const populatedMsg = await newMessage.populate("sender", "name");
 
-      // Emit to the chat room (for users currently viewing this chat)
       io.to(chatId).emit("receiveMessage", populatedMsg);
 
-      // Notify other users in this chat who may not be viewing it
       if (chat && chat.users) {
         chat.users.forEach((userId) => {
           if (userId.toString() !== senderId) {

@@ -14,12 +14,10 @@ function ChatInbox() {
   const currentUserId = token ? jwtDecode(token).id : null;
   const { clearUnread, isChatUnread, markChatRead } = useChatNotifications();
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Clear badge count when viewing inbox (but keep per-chat highlights)
   useEffect(() => {
     clearUnread();
   }, [clearUnread]);
@@ -77,7 +75,6 @@ function ChatInbox() {
           Your Conversations
         </h2>
 
-        {/* Empty state */}
         {chats.length === 0 && (
           <div className="text-center py-20">
             <svg
@@ -102,10 +99,8 @@ function ChatInbox() {
           </div>
         )}
 
-        {/* Chat list */}
         <div className="space-y-2">
           {chats.map((chat) => {
-            // Find the other user in the chat
             const otherUser = chat.users?.find(
               (u) => u._id !== currentUserId
             );
@@ -126,7 +121,6 @@ function ChatInbox() {
                     : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 hover:shadow-md"
                 }`}
               >
-                {/* Avatar */}
                 <div className="relative shrink-0">
                   {otherUser?.avatarUrl ? (
                     <img
@@ -139,7 +133,6 @@ function ChatInbox() {
                       {initial}
                     </div>
                   )}
-                  {/* Unread dot on avatar */}
                   {hasUnread && (
                     <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-400 opacity-75"></span>
@@ -149,7 +142,6 @@ function ChatInbox() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  {/* Name + item */}
                   <div className="flex items-baseline gap-2">
                     <p className={`truncate ${
                       hasUnread
@@ -171,7 +163,6 @@ function ChatInbox() {
                     </p>
                   )}
 
-                  {/* Last message */}
                   <p className={`text-sm truncate mt-0.5 ${
                     hasUnread
                       ? "text-gray-800 dark:text-gray-200 font-medium"
@@ -181,7 +172,6 @@ function ChatInbox() {
                   </p>
                 </div>
 
-                {/* Time + unread indicator */}
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <span className={`text-xs ${
                     hasUnread

@@ -110,7 +110,6 @@ function ItemDetails() {
     setShowContactModal(true);
   };
   
-  // Check if current user is the owner (seller can be ObjectId string or populated object)
   const sellerId = item?.seller?._id || item?.seller;
   const currentUserId = user?.userId || user?._id;
   const isOwner = sellerId && currentUserId && sellerId.toString() === currentUserId.toString();

@@ -12,7 +12,7 @@ const otpSchema = new mongoose.Schema({
   expiresAt: {
     type: Date,
     required: true,
-    index: { expires: 0 }, // TTL index: auto-delete when expiresAt is reached
+    index: { expires: 0 }, 
   },
 });
 

@@ -7,12 +7,11 @@ const ChatContext = createContext();
 export function ChatProvider({ children }) {
   const { user, isAuthenticated } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
-  // Track which chatIds have unread messages (for highlighting in inbox)
+  
   const [unreadChatIds, setUnreadChatIds] = useState(new Set());
-  // Track which chatId the user is currently viewing
+  
   const [activeChatId, setActiveChatId] = useState(null);
 
-  // Register user for personal notifications when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       const userId = user._id || user.userId;
@@ -21,13 +20,11 @@ export function ChatProvider({ children }) {
       }
     }
   }, [isAuthenticated, user]);
-
-  // Listen for new message notifications
+  
   useEffect(() => {
     if (!isAuthenticated) return;
 
     const handleNotification = ({ chatId }) => {
-      // Don't increment if user is currently viewing this chat
       if (chatId === activeChatId) return;
       setUnreadCount((prev) => prev + 1);
       setUnreadChatIds((prev) => new Set(prev).add(chatId));
@@ -40,13 +37,11 @@ export function ChatProvider({ children }) {
     };
   }, [isAuthenticated, activeChatId]);
 
-  // Clear all unread (when visiting inbox)
   const clearUnread = useCallback(() => {
     setUnreadCount(0);
     setUnreadChatIds(new Set());
   }, []);
 
-  // Mark a specific chat as read (when opening a conversation)
   const markChatRead = useCallback((chatId) => {
     setUnreadChatIds((prev) => {
       const next = new Set(prev);
@@ -55,16 +50,13 @@ export function ChatProvider({ children }) {
     });
   }, []);
 
-  // Check if a specific chat has unread messages
   const isChatUnread = useCallback(
     (chatId) => unreadChatIds.has(chatId),
     [unreadChatIds]
   );
 
-  // Mark a specific chat as active (when entering a chat page)
   const enterChat = useCallback((chatId) => {
     setActiveChatId(chatId);
-    // Also mark it read immediately
     setUnreadChatIds((prev) => {
       const next = new Set(prev);
       next.delete(chatId);
@@ -72,7 +64,6 @@ export function ChatProvider({ children }) {
     });
   }, []);
 
-  // Leave chat (when leaving a chat page)
   const leaveChat = useCallback(() => {
     setActiveChatId(null);
   }, []);

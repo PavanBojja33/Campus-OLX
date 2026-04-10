@@ -3,7 +3,6 @@ const router = express.Router();
 const Chat = require("../models/Chat");
 const protect = require("../middleware/authMiddleware");
 
-// GET /api/chats — get all chats for the logged-in user
 router.get("/", protect, async (req, res) => {
   try {
     const userId = req.user;
@@ -24,7 +23,6 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// POST /api/chats — create or find existing chat for an item between buyer and seller
 router.post("/", protect, async (req, res) => {
   try {
     const { itemId, sellerId } = req.body;
@@ -34,12 +32,10 @@ router.post("/", protect, async (req, res) => {
       return res.status(400).json({ message: "itemId and sellerId are required" });
     }
 
-    // Don't allow chatting with yourself
     if (buyerId.toString() === sellerId.toString()) {
       return res.status(400).json({ message: "You cannot chat with yourself" });
     }
 
-    // Check if a chat already exists for this item between these two users
     let chat = await Chat.findOne({
       item: itemId,
       users: { $all: [buyerId, sellerId] },
@@ -52,7 +48,6 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    // Populate for response
     chat = await chat.populate("users", "name avatarUrl department");
     chat = await chat.populate("item", "title images price");
 
