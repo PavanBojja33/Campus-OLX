@@ -1,0 +1,29 @@
+[33m14d2f85[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #2 from PavanBojja33/revert-1-testing
+[33mf3b8b57[m Revert "Improve chat behavior and implement college email validation"
+[33m9a23bc9[m Merge pull request #1 from PavanBojja33/testing
+[33mc31e4be[m[33m ([m[1;31morigin/testing[m[33m, [m[1;32mtesting[m[33m)[m UI fixes
+[33m986151b[m fix contact seller button alignment
+[33m79682f5[m Added badge to chat
+[33mfad8952[m Added chat system, email verification, and profile enhancements
+[33m51f824a[m Chat fix
+[33mf4a7693[m Back
+[33mf851741[m chat integration
+[33mc881e48[m chat in progress
+[33m66b5686[m logo updated
+[33m1348fb0[m logo updated
+[33ma93e696[m Profile picture bug fix
+[33m5df3897[m remove profile option
+[33m81127d0[m visible site name
+[33ma7a43fe[m Refresh 404 not found error
+[33m607dd77[m site name
+[33m46889cb[m profile button to username and some small changes
+[33m17738c1[m server updated for cors 3
+[33m3a54d7f[m server updated for cors 2
+[33mafbb8c5[m server updated for cors
+[33mde28fe5[m many features updated to frontend
+[33mf91f882[m Profile page updation
+[33m71401cf[m Completed polishing upto mylistings
+[33m83c0075[m upto backend
+[33m8a90ca8[m frontend rebuild start
+[33maeb6d86[m Create README.md
+[33m31be3fb[m Add frontend and backend
