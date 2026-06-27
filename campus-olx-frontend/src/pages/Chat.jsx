@@ -61,11 +61,9 @@ function Chat() {
 
     const handleReceiveMessage = (msg) => {
       setMessages((prev) => {
-        
         const filtered = prev.filter(
           (m) => !(m._isOptimistic && m.content === msg.content && m.sender?._id === (msg.sender?._id || msg.sender))
         );
-        
         const exists = filtered.some((m) => m._id === msg._id);
         return exists ? filtered : [...filtered, msg];
       });
@@ -78,7 +76,6 @@ function Chat() {
     };
   }, [chatId]);
 
- 
   const sendMessage = () => {
     if (!input.trim()) return;
 
@@ -130,6 +127,7 @@ function Chat() {
     <div className="min-h-screen flex justify-center items-start bg-gray-100 dark:bg-gray-900 p-4 pt-8">
       <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col h-[80vh]">
 
+        {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
           <button
             onClick={() => navigate("/chats")}
@@ -151,6 +149,7 @@ function Chat() {
           </div>
         </div>
 
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
           {messages.length === 0 && (
             <div className="flex items-center justify-center h-full">
@@ -195,6 +194,7 @@ function Chat() {
           <div ref={messagesEndRef}></div>
         </div>
 
+        {/* Input */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
           <input
             type="text"

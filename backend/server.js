@@ -14,7 +14,7 @@ const Item = require("./models/Item");
 const dns = require("node:dns");
 dns.setDefaultResultOrder("ipv4first");
 
-dotenv.config();
+dotenv.config({ path: require("path").join(__dirname, ".env") });
 
 const app = express();
 const server = http.createServer(app);
@@ -22,8 +22,8 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "http://localhost:5173",
   "https://campus-olx-web.vercel.app",
-];
-
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 app.use(
   cors({
@@ -94,7 +94,7 @@ io.on("connection", (socket) => {
       const chat = await Chat.findByIdAndUpdate(
         chatId,
         { latestMessage: newMessage._id },
-        { new: true }
+        { new: true },
       );
 
       const populatedMsg = await newMessage.populate("sender", "name");
@@ -121,7 +121,6 @@ io.on("connection", (socket) => {
   });
 });
 
-
-server.listen(process.env.PORT || 5000, () => {
-  console.log(`Server is running on port ${process.env.PORT || 5000}`);
+server.listen(process.env.PORT || 5555, () => {
+  console.log(`Server is running on port ${process.env.PORT || 5555}`);
 });

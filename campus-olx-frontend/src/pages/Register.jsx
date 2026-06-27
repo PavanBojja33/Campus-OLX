@@ -34,13 +34,18 @@ function Register() {
       toast.error("Password must be at least 6 characters");
       return;
     }
+    let  regex = /^(?=[A-Za-z_])(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_])[A-Za-z0-9!@#$%^&*()_]{6,}$/; 
+    if(!regex.test(formData.password)){
+      toast.error("Password must meet security standards.");
+      return;
+    }  
 
     setLoading(true);
 
     try {
       const { confirmPassword, ...data } = formData;
       const res = await authAPI.register({ ...data, email });
-      toast.success(res.data.message || "Registration successful! Please verify your email.");
+      toast.success(res.data.message || "OTP sent! Please check your email.");
       navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed. Please try again.");

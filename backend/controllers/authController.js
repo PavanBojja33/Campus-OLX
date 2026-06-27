@@ -26,7 +26,9 @@ exports.register = async (req, res) => {
     }
 
     if (!validateCvrEmail(email)) {
-      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
+      return res.status(400).json({
+        message: "Only CVR College email IDs (@cvr.ac.in) are allowed",
+      });
     }
 
     const existingUser = await User.findOne({ email });
@@ -36,20 +38,16 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      department,
-      isVerified: false,
-    });
-
     const otp = generateOtp();
-    await Otp.deleteMany({ email }); 
+
+    await Otp.deleteMany({ email });
     await Otp.create({
       email,
       otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), 
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      name,
+      hashedPassword,
+      department,
     });
 
     await sendEmail(
@@ -67,11 +65,11 @@ exports.register = async (req, res) => {
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
         <p style="color: #9ca3af; font-size: 12px;">If you didn't create a Campus OLX account, you can safely ignore this email.</p>
       </div>
-      `
+      `,
     );
 
-    res.status(201).json({
-      message: "Registration successful. Please verify your email.",
+    res.status(200).json({
+      message: "OTP sent to your email. Please verify to complete registration.",
       email,
     });
   } catch (error) {
@@ -90,7 +88,9 @@ exports.verifyOtp = async (req, res) => {
     }
 
     if (!validateCvrEmail(email)) {
-      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
+      return res.status(400).json({
+        message: "Only CVR College email IDs (@cvr.ac.in) are allowed",
+      });
     }
 
     const otpRecord = await Otp.findOne({ email, otp });
@@ -101,10 +101,18 @@ exports.verifyOtp = async (req, res) => {
 
     if (otpRecord.expiresAt < new Date()) {
       await Otp.deleteMany({ email });
-      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+      return res
+        .status(400)
+        .json({ message: "OTP has expired. Please request a new one." });
     }
 
-    await User.findOneAndUpdate({ email }, { isVerified: true });
+    await User.create({
+      name: otpRecord.name,
+      email,
+      password: otpRecord.hashedPassword,
+      department: otpRecord.department,
+      isVerified: true,
+    });
 
     await Otp.deleteMany({ email });
 
@@ -124,25 +132,22 @@ exports.resendOtp = async (req, res) => {
     }
 
     if (!validateCvrEmail(email)) {
-      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
+      return res.status(400).json({
+        message: "Only CVR College email IDs (@cvr.ac.in) are allowed",
+      });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const pendingOtp = await Otp.findOne({ email });
+    if (!pendingOtp) {
+      return res
+        .status(404)
+        .json({ message: "No pending registration found. Please register again." });
     }
 
-    if (user.isVerified) {
-      return res.status(400).json({ message: "Email is already verified" });
-    }
-
-    const otp = generateOtp();
-    await Otp.deleteMany({ email });
-    await Otp.create({
-      email,
-      otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    });
+    const newOtp = generateOtp();
+    pendingOtp.otp = newOtp;
+    pendingOtp.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await pendingOtp.save();
 
     await sendEmail(
       email,
@@ -150,14 +155,14 @@ exports.resendOtp = async (req, res) => {
       `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
         <h2 style="color: #4f46e5;">Campus OLX — New Verification Code</h2>
-        <p>Hi <strong>${user.name}</strong>,</p>
+        <p>Hi <strong>${pendingOtp.name}</strong>,</p>
         <p>Your new verification code is:</p>
         <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; text-align: center; margin: 16px 0;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">${otp}</span>
+          <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">${newOtp}</span>
         </div>
         <p style="color: #6b7280; font-size: 14px;">This code expires in <strong>10 minutes</strong>.</p>
       </div>
-      `
+      `,
     );
 
     res.json({ message: "New OTP sent to your email" });
@@ -172,8 +177,16 @@ exports.login = async (req, res) => {
     const email = req.body.email?.trim().toLowerCase();
     const { password } = req.body;
 
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
     if (!validateCvrEmail(email)) {
-      return res.status(400).json({ message: "Only CVR College email IDs (@cvr.ac.in) are allowed" });
+      return res.status(400).json({
+        message: "Only CVR College email IDs (@cvr.ac.in) are allowed",
+      });
     }
 
     const user = await User.findOne({ email });
@@ -194,11 +207,9 @@ exports.login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     res.json({ token });
   } catch (error) {

@@ -12,8 +12,11 @@ const otpSchema = new mongoose.Schema({
   expiresAt: {
     type: Date,
     required: true,
-    index: { expires: 0 }, 
+    index: { expires: 0 },
   },
+  name: { type: String },
+  hashedPassword: { type: String },
+  department: { type: String },
 });
 
 module.exports = mongoose.model("Otp", otpSchema);
