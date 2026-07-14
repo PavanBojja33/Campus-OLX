@@ -19,11 +19,7 @@ dotenv.config({ path: require("path").join(__dirname, ".env") });
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://campus-olx-web.vercel.app",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+const allowedOrigins = ["http://localhost:5173"].filter(Boolean);
 
 app.use(
   cors({
@@ -103,7 +99,7 @@ io.on("connection", (socket) => {
 
       if (chat && chat.users) {
         chat.users.forEach((userId) => {
-          if (userId.toString() !== senderId) {
+          if (userId.toString() !== senderId.toString()) {
             io.to(`user_${userId}`).emit("newMessageNotification", {
               chatId,
               message: populatedMsg,
