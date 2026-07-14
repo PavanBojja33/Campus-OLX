@@ -23,17 +23,16 @@ By restricting registration to verified institutional emails, Campus OLX provide
 
 ## 3. Key Features
 
-* **Verified Institutional Registration:** Users can only register if they possess an authorized college email domain (specifically configured for `@cvr.ac.in` in the current codebase).
-* **Two-Step Email Verification:** Registration inputs are stored in a temporary database while a secure 6-digit OTP is delivered to the student’s college email. Account creation is completed only after successful OTP validation.
-* **JWT-Based Authentication:** Standard JSON Web Tokens are generated upon login, persisted on the client browser, and attached to the headers of subsequent requests to protect sensitive routes.
-* **Product Listing & Management:** Verified sellers can list items with fields for Title, Description, Price, Category, Semester, and Department, and upload up to 5 images.
-* **Cloud-based Image Storage:** Item images are handled using Multer middleware and streamed directly to Cloudinary storage, keeping the application stateless and database sizes light.
-* **Targeted Search & Filters:** Buyers can browse items and filter listings by Category, Department, and targeted Semester to find relevant academic resources quickly.
-* **Direct Seller Contact & Inbox:** A dedicated messaging gateway connects buyers directly with sellers from the item details page, automatically establishing a chat context.
-* **Real-Time Bidirectional Messaging:** Instant messaging is powered by Socket.IO, enabling real-time chat delivery and unread message notifications directly within the client app.
-* **Interactive Profile Management:** Users can customize profiles, update contact info (phone, year, section, bio), upload avatar images, and view all items they currently have listed.
-* **Seller Authorization Protections:** Strict server-side checks verify listing ownership before permitting edits, removals, or marking items as sold.
-
+* **Verified Institutional Registration** 
+* **Two-Step Email Verification** 
+* **JWT-Based Authentication**
+* **Product Listing & Management**
+* **Cloud-based Image Storage**
+* **Targeted Search & Filters**
+* **Direct Seller Contact & Inbox**
+* **Real-Time Bidirectional Messaging**
+* **Interactive Profile Management**
+* **Seller Authorization Protections** 
 ---
 
 ## 4. Technology Stack
@@ -182,77 +181,6 @@ Real-time chat is decoupled from the typical request-response API flow by establ
 
 ## 9. Database Design
 
-```mermaid
-erDiagram
-    User ||--o{ Item : "registers & sells"
-    User ||--o{ Chat : "participates in"
-    User ||--o{ Message : "sends"
-    
-    Item ||--o{ Chat : "corresponds to"
-    
-    Chat ||--o{ Message : "contains"
-    Chat |o--|| Message : "has latestMessage"
-    
-    User {
-        ObjectId id PK
-        String name
-        String email UK
-        String password
-        String department
-        String bio
-        String avatarUrl
-        Boolean isVerified
-        String phone
-        String year
-        String section
-        Date createdAt
-        Date updatedAt
-    }
-
-    Item {
-        ObjectId id PK
-        String title
-        String description
-        Number price
-        String category
-        String semester
-        String department
-        String array images
-        ObjectId seller FK
-        String status
-        Date createdAt
-        Date updatedAt
-    }
-
-    Chat {
-        ObjectId id PK
-        ObjectId item FK
-        ObjectId array users FK
-        ObjectId latestMessage FK
-        Date createdAt
-        Date updatedAt
-    }
-
-    Message {
-        ObjectId id PK
-        ObjectId chatId FK
-        ObjectId sender FK
-        String content
-        Date createdAt
-        Date updatedAt
-    }
-
-    Otp {
-        ObjectId id PK
-        String email UK
-        String otp
-        Date expiresAt
-        String name
-        String hashedPassword
-        String department
-    }
-```
-
 ### Schema Model Definitions
 
 #### 1. User
@@ -278,58 +206,8 @@ Handles temporary user registration records pending email verification.
 
 ---
 
-## 10. API Documentation
 
-### Authentication Endpoints
-All endpoints are prefix-routed on `/api/auth`.
-
-| Method | Endpoint | Authentication Required | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/register` | No | Creates a temporary registration record in the `Otp` schema and dispatches a 6-digit verification code to the target email. |
-| `POST` | `/verify-otp` | No | Validates the OTP. On validation, the user profile is written to the `User` schema and the OTP record is purged. |
-| `POST` | `/resend-otp` | No | Refreshes and re-sends a registration verification code to the requested email. |
-| `POST` | `/login` | No | Verifies credentials against the stored user and returns a signed JWT. |
-
-### User Endpoints
-All endpoints are prefix-routed on `/api/user`.
-
-| Method | Endpoint | Authentication Required | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/profile` | Yes | Retrieves the profile details of the currently authenticated user (excluding password). |
-| `PUT` | `/profile` | Yes | Updates profile details (name, department, bio, phone, section, year, avatarUrl) for the logged-in user. |
-| `GET` | `/:id` | No | Public endpoint to retrieve details of a specific user profile by their ID. |
-
-### Item Endpoints
-All endpoints are prefix-routed on `/api/items`.
-
-| Method | Endpoint | Authentication Required | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/add` | Yes | Creates an item listing. Supports file uploads (up to 5 images) parsed through Multer and sent to Cloudinary. |
-| `GET` | `/` | No | Lists active items. Supports filter queries (`semester`, `department`, `category`) and pagination parameters (`page`, `limit`). |
-| `GET` | `/my` | Yes | Returns all items registered under the authenticated user. |
-| `PUT` | `/sold/:id` | Yes (Seller Only) | Marks a specific item listing status as `"sold"`. |
-| `PUT` | `/remove/:id` | Yes (Seller Only) | Marks a specific item listing status as `"removed"`. |
-| `PUT` | `/:id` | Yes (Seller Only) | Updates details (title, description, price, category, semester, department) for a listing. |
-
-### Chat Endpoints
-All endpoints are prefix-routed on `/api/chats`.
-
-| Method | Endpoint | Authentication Required | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/` | Yes | Fetches all chat sessions where the logged-in user is a participant. |
-| `POST` | `/` | Yes | Locates an existing chat session for an item or instantiates a new one between the buyer and seller. |
-
-### Message Endpoints
-All endpoints are prefix-routed on `/api/messages`.
-
-| Method | Endpoint | Authentication Required | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/:chatId` | Yes | Retrieves all messages stored inside a specific chat conversation, sorted chronologically. |
-| `POST` | `/` | Yes | Submits a new message under a conversation and updates the corresponding Chat's `latestMessage`. |
-
----
-
-## 11. Project Folder Structure
+## 10. Project Folder Structure
 
 ```text
 Campus-OLX/
@@ -405,7 +283,7 @@ Campus-OLX/
 
 ---
 
-## 12. Environment Variables
+## 11. Environment Variables
 
 To operate correctly, both the backend and frontend modules must be configured with separate environment variable files. 
 
@@ -443,7 +321,7 @@ VITE_SOCKET_URL=http://localhost:5555
 
 ---
 
-## 13. Local Installation and Setup
+## 12. Local Installation and Setup
 
 Follow these steps to run a copy of the project on your local workstation for development and testing.
 
@@ -468,7 +346,7 @@ cd Campus-OLX
    npm install
    ```
 3. Configure the local environment:
-   Create a `.env` file in the `/backend` root directory using the template shown in the [Environment Variables](#12-environment-variables) section.
+   Create a `.env` file in the `/backend` root directory using the template shown in the [Environment Variables](#11-environment-variables) section.
 4. Launch the backend server:
    ```bash
    npm start
@@ -485,7 +363,7 @@ cd Campus-OLX
    npm install
    ```
 3. Configure the local environment:
-   Create a `.env` file in the `/campus-olx-frontend` root directory using the template shown in the [Environment Variables](#12-environment-variables) section.
+   Create a `.env` file in the `/campus-olx-frontend` root directory using the template shown in the [Environment Variables](#11-environment-variables) section.
 4. Launch the frontend React app in development mode:
    ```bash
    npm run dev
@@ -493,49 +371,3 @@ cd Campus-OLX
 5. Open your browser and navigate to `http://localhost:5173`.
 
 ---
-
-## 14. How Core Features Work Internally
-
-* **Nodemailer Registration OTP:** When a user posts a registration, the server hashes the input password using Bcryptjs and saves the user metadata inside the temporary `Otp` collection. This document is timestamped and automatically deleted via MongoDB TTL indexes after 10 minutes. The Nodemailer instance uses an SMTP Gmail transporter to dispatch the validation code to the client's email inbox.
-* **Cloudinary Direct Stream:** The product listing upload uses Multer. Files are mapped to memory using `multer-storage-cloudinary` and streamed over an HTTP API directly into Cloudinary folders. The API returns unique asset URLs, which are stored in the database.
-* **Socket Room Synchronization:** During active chat interactions, rather than polling REST endpoints, Socket.IO matches the active conversational partners into standard rooms named after the corresponding `chatId`. Whenever a client submits a message, the server processes the data, validates the token, writes the message database record, and uses `io.to(chatId).emit(...)` to broadcast the payload to both participants instantly.
-
----
-
-## 15. Security Considerations
-
-* **Password Cryptography:** User passwords are encrypted using Bcryptjs with a work factor of 10. The system never stores plain-text credentials in the database.
-* **Stateless Route Access Control:** Requests to API endpoints requiring authentication must carry a valid JWT. The authentication middleware validates this token and extracts the `req.user` payload.
-* **Listing Modification Checks:** Modifying database listings (e.g., updating details, marking as sold, removing) is protected by custom ownership verification middleware, preventing users from altering listings that belong to other sellers.
-* **Domain Restrictions:** Account creation is locked strictly to `@cvr.ac.in` domain emails to prevent external sign-ups.
-* **Cross-Origin Resource Sharing (CORS):** The backend restrains incoming CORS headers strictly to specified dev clients (`http://localhost:5173`), preventing unauthorized domains from calling application routes.
-
----
-
-## 16. Technical Design Decisions
-
-* **Separate Frontend & Backend Directories:** Decoupling concerns allows the client UI and the server API to scale independently, keeping compile pipelines clean and making code maintenance easier.
-* **MongoDB Document Model:** A database that accommodates nested data models is highly suited to this application's data. Chats, listings, and messages have flexible schema definitions that fit well into JSON-like Mongoose schemas.
-* **Socket.IO for Real-Time Exchange:** While REST polling creates network overhead, full-duplex WebSocket connections allow instantaneous communication, giving buyers and sellers an interactive experience similar to standard chat platforms.
-* **Stateless JWT Auth:** Using signed JWT tokens eliminates the need for the backend to maintain user sessions in memory, allowing for simple validation on incoming requests.
-
----
-
-## 17. Future Improvements
-
-* **Advanced Search Options:** Implementing text search indexing with fuzzy-matching search bars to help buyers find listings using partial keywords.
-* **Paginated Scrolling:** Implementing infinite scroll queries on the Marketplace page to optimize loading speeds.
-* **User Rating & Reviews System:** Building a post-transaction rating mechanism to establish credibility scores for student sellers.
-* **Offline Message Badging:** Setting up persistent indicators to store unread flags in the database so users can view unread message counts across sessions.
-* **Rate Limiting:** Integrating security layers like `express-rate-limit` to prevent brute-force attacks on OTP generation and authentication endpoints.
-
----
-
-## 18. Technical Highlights
-
-For reviewers evaluating engineering capabilities:
-* **Full-Stack Architecture:** Developed using the MERN stack with clear separation between the client and server.
-* **Real-Time Bidirectional Sync:** Implemented full-duplex communication with Socket.IO, featuring room-based message distribution and unread indicators.
-* **Multi-Stage Middleware Pipelines:** Leveraged sequential middleware in Express for authentication checks, listing ownership validation, and image upload streaming.
-* **Transactional Reliability:** Set up a clean signup workflow with auto-expiring OTP validation using TTL collection indexes.
-* **Optimized Storage Handling:** Streamed uploads directly to Cloudinary via Multer memory buffers to keep the database lightweight.
